@@ -69,41 +69,42 @@ def actions(board):
     return actions
 
 
-def result(board, action, curr_player):
+def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    current = initial_state()
+    new_board = initial_state()
+    curr_player = player(board)
 
     for i in range(3):
         for j in range(3):
-            current[i][j] = board[i][j]
+            new_board[i][j] = board[i][j]
 
             if (i, j) == action:
-                current[i][j] = curr_player
+                new_board[i][j] = curr_player
 
-    return current
+    return new_board
 
 
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    x_set = []
-    o_set = []
+    x_moves = []
+    o_moves = []
 
     for i in range(3):
         for j in range(3):
             if board[i][j] == X:
-                x_set.append((i, j))
+                x_moves.append((i, j))
 
             if board[i][j] == O:
-                o_set.append((i, j))
+                o_moves.append((i, j))
 
-    if is_winner(x_set):
+    if is_winner(x_moves):
         return X
 
-    if is_winner(o_set):
+    if is_winner(o_moves):
         return O
 
     return None
@@ -114,21 +115,21 @@ def terminal(board):
     Returns True if game is over, False otherwise.
     """
     is_full = True
-    x_set = []
-    o_set = []
+    x_moves = []
+    o_moves = []
 
     for i in range(3):
         for j in range(3):
             if board[i][j] == X:
-                x_set.append((i, j))
+                x_moves.append((i, j))
 
             if board[i][j] == O:
-                o_set.append((i, j))
+                o_moves.append((i, j))
 
             if board[i][j] == EMPTY:
                 is_full = False
 
-    return is_full or is_winner(x_set) or is_winner(o_set)
+    return is_full or is_winner(x_moves) or is_winner(o_moves)
 
 
 def get_score(board):
@@ -143,36 +144,51 @@ def get_score(board):
     return 1 if win == X else -1
 
 
+def max_value(board):
+    if terminal(board):
+        return get_score(board)
+
+    v = -math.inf
+
+    for action in actions(board):
+        v = max(v, min_value(result(board, action)))
+
+    return v
+
+
+def min_value(board):
+    if terminal(board):
+        return get_score(board)
+
+    v = math.inf
+
+    for action in actions(board):
+        v = min(v, max_value(result(board, action)))
+
+    return v
+
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    possible_moves = actions(board)
-    sum = []
+    curr_player = player(board)
+    score = 0
+    move = ()
 
-    for move in possible_moves:
-        counter = 0
-        curr_score = 0
-        curr_player = player(board)
-        current_board = board
-        curr_actions = actions(current_board)
+    for action in actions(board):
+        if curr_player == X:
+            v = min_value(result(board, action))
 
-        while len(curr_actions) > 0 and counter < 20:
-            new_board = result(current_board, move, curr_player)
-            score = get_score(new_board)
-            curr_actions = actions(new_board)
+            if v >= score:
+                score = v
+                move = action
 
-            curr_player = O if player == X else X
-            current_board = new_board
-            curr_score += score
-            counter += 1
+        if curr_player == O:
+            v = max_value(result(board, action))
 
-        sum.append((curr_score, move))
+            if v <= score:
+                score = v
+                move = action
 
-    best_sum = sum[0]
-
-    for a in sum:
-        if a[1] > best_sum[1]:
-            best_sum = a
-
-    return best_sum[1]
+    return move
