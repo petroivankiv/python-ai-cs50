@@ -144,26 +144,34 @@ def get_score(board):
     return 1 if win == X else -1
 
 
-def max_value(board):
+def max_value(board, alpha = -math.inf, beta = math.inf):
     if terminal(board):
         return get_score(board)
 
     v = -math.inf
 
     for action in actions(board):
-        v = max(v, min_value(result(board, action)))
+        v = max(v, min_value(result(board, action), alpha, beta))
+        alpha = max(alpha, v)
+        
+        if beta <= alpha:
+            return v
 
     return v
 
 
-def min_value(board):
+def min_value(board, alpha = -math.inf, beta = math.inf):
     if terminal(board):
         return get_score(board)
 
     v = math.inf
 
     for action in actions(board):
-        v = min(v, max_value(result(board, action)))
+        v = min(v, max_value(result(board, action), alpha, beta))
+        beta = min(beta, v)
+        
+        if beta <= alpha:
+            return v
 
     return v
 
