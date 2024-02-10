@@ -145,6 +145,9 @@ def get_score(board):
 
 
 def max_value(board, alpha = -math.inf, beta = math.inf):
+    """
+    MAX обирає дію а в Actions(s), яка створює найбільше значення min-value(result(s, a)).
+    """
     if terminal(board):
         return get_score(board)
 
@@ -152,6 +155,9 @@ def max_value(board, alpha = -math.inf, beta = math.inf):
 
     for action in actions(board):
         v = max(v, min_value(result(board, action), alpha, beta))
+        
+        # Alpha is the best value that the maximizer currently can guarantee 
+        # at that level or above. 
         alpha = max(alpha, v)
         
         if beta <= alpha:
@@ -161,6 +167,9 @@ def max_value(board, alpha = -math.inf, beta = math.inf):
 
 
 def min_value(board, alpha = -math.inf, beta = math.inf):
+    """
+    MIN обирає дію а в Actions(s), яка створює найменше значення max-value(result(s, a)).
+    """
     if terminal(board):
         return get_score(board)
 
@@ -168,6 +177,9 @@ def min_value(board, alpha = -math.inf, beta = math.inf):
 
     for action in actions(board):
         v = min(v, max_value(result(board, action), alpha, beta))
+        
+        # Beta is the best value that the minimizer currently can guarantee 
+        # at that level or below.
         beta = min(beta, v)
         
         if beta <= alpha:
@@ -186,6 +198,7 @@ def minimax(board):
 
     for action in actions(board):
         if curr_player == X:
+            # makes move and pass to mini player
             v = min_value(result(board, action))
 
             if v >= score:
@@ -193,6 +206,7 @@ def minimax(board):
                 move = action
 
         if curr_player == O:
+            # makes move and pass to max player
             v = max_value(result(board, action))
 
             if v <= score:
