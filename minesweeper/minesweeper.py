@@ -118,7 +118,8 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        self.cells.remove(cell)
+        if cell in self.cells:
+            self.cells.remove(cell)
 
     def mark_safe(self, cell):
         """
@@ -193,15 +194,24 @@ class MinesweeperAI():
         # Loop over all cells within one row and column
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
+                move = (i, j)
 
                 # Ignore the cell itself
-                if (i, j) == cell:
+                if move == cell:
                     continue
 
                 # Update count if cell in bounds
-                if 0 <= i < self.height and 0 <= j < self.width and (i, j) not in self.moves_made:
-                    cells.append((i, j))
-       
+                if 0 <= i < self.height and 0 <= j < self.width and move not in self.moves_made:
+                    cells.append(move)
+
+                    if count == 0:
+                        self.mark_safe(move)
+                        continue
+                        
+                    for sentence in self.knowledge:
+                        if move in sentence.cells and len(sentence.cells) == 1 and sentence.count != 0:
+                            self.mark_mine(move)
+
         self.knowledge.append(Sentence(cells, count))
 
     def make_safe_move(self):
@@ -214,13 +224,15 @@ class MinesweeperAI():
         and self.moves_made, but should not modify any of those values.
         """
 
-        for sentence in self.knowledge:
-            safe_cells = sentence.known_safes()
+        for i in range(self.height):
+            for j in range(self.width):
+                move = (i, j)
 
-            if safe_cells != None:
-                for cell in safe_cells:
-                    if cell != None:
-                        return cell
+                if move in self.moves_made or move in self.mines:
+                    continue
+
+                if move in self.safes:
+                    return move
 
         return None
 
