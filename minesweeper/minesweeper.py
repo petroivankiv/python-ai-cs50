@@ -200,19 +200,28 @@ class MinesweeperAI():
                 if move == cell:
                     continue
 
-                # Update count if cell in bounds
-                if 0 <= i < self.height and 0 <= j < self.width and move not in self.moves_made:
+                if 0 <= i < self.height and 0 <= j < self.width and move not in self.moves_made and move not in self.safes and move not in self.mines:
                     cells.append(move)
 
                     if count == 0:
                         self.mark_safe(move)
                         continue
-                        
-                    for sentence in self.knowledge:
-                        if move in sentence.cells and len(sentence.cells) == 1 and sentence.count != 0:
-                            self.mark_mine(move)
 
-        self.knowledge.append(Sentence(cells, count))
+                    for sentence in self.knowledge:
+                        if move in sentence.cells:
+                            if sentence.count == 0:
+                                self.mark_safe(move)
+                                continue
+                            
+                            if len(sentence.cells) == sentence.count:
+                                self.mark_mine(move)
+                                
+        if len(cells) == count:
+            for cell in cells:
+                self.mark_mine(cell)
+        else:                             
+            self.knowledge.append(Sentence(cells, count))
+                        
 
     def make_safe_move(self):
         """
