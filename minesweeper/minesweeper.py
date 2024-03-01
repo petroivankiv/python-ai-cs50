@@ -105,13 +105,13 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        return self.cells if len(self.cells) == self.count else None
+        return self.cells if len(self.cells) == self.count else set()
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        return self.cells if self.count == 0 else None
+        return self.cells if self.count == 0 else set()
 
     def mark_mine(self, cell):
         """
@@ -171,6 +171,30 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
+    def update_move(self, move):
+        for sentence in self.knowledge:
+            if move in sentence.cells:
+                if sentence.count == 0:
+                    self.mark_safe(move)
+
+                if len(sentence.cells) == sentence.count:
+                    self.mark_mine(move)
+
+    def add_centences(self, new_sentence):
+        for sentence in self.knowledge:
+            if len(sentence.cells) > 0 and sentence.cells.issubset(new_sentence.cells):
+                count = new_sentence.count - sentence.count
+                cells = new_sentence.cells - sentence.cells
+
+                self.knowledge.append(Sentence(cells, count))
+
+                if count == 0 or count == len(cells):
+                    for cell in cells:
+                        self.mark_safe(
+                            cell) if count == 0 else self.mark_mine(cell)
+
+                break
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -189,7 +213,7 @@ class MinesweeperAI():
         self.moves_made.add(cell)
         self.mark_safe(cell)
 
-        cells = []
+        cells = set()
 
         # Loop over all cells within one row and column
         for i in range(cell[0] - 1, cell[0] + 2):
@@ -201,27 +225,20 @@ class MinesweeperAI():
                     continue
 
                 if 0 <= i < self.height and 0 <= j < self.width and move not in self.moves_made and move not in self.safes and move not in self.mines:
-                    cells.append(move)
-
                     if count == 0:
                         self.mark_safe(move)
                         continue
 
-                    for sentence in self.knowledge:
-                        if move in sentence.cells:
-                            if sentence.count == 0:
-                                self.mark_safe(move)
-                                continue
-                            
-                            if len(sentence.cells) == sentence.count:
-                                self.mark_mine(move)
-                                
-        if len(cells) == count:
-            for cell in cells:
-                self.mark_mine(cell)
-        else:                             
-            self.knowledge.append(Sentence(cells, count))
-                        
+                    cells.add(move)
+
+                    self.update_move(move)
+
+        new_sentence = Sentence(cells, count)
+
+        # add sentence only if count is not null
+        if count > 0:
+            self.add_centences(new_sentence)
+            self.knowledge.append(new_sentence)
 
     def make_safe_move(self):
         """
