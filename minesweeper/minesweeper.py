@@ -172,45 +172,30 @@ class MinesweeperAI():
             sentence.mark_safe(cell)
 
     def mark_known(self):
-        safes = []
-        mines = []
+        safes = set()
+        mines = set()
 
         for sentence in self.knowledge:
             for cell in sentence.known_safes():
-                safes.append(cell)
+                safes.add(cell)
                 continue
 
             for cell in sentence.known_mines():
-                mines.append(cell)
+                mines.add(cell)
 
         [self.mark_safe(cell) for cell in safes]
         [self.mark_mine(cell) for cell in mines]
 
-    # def add_centences(self, new_sentence):
-    #     for sentence in self.knowledge:
-    #         if len(sentence.cells) > 0 and sentence.cells.issubset(new_sentence.cells):
-    #             count = min(0, new_sentence.count - sentence.count)
-    #             cells = new_sentence.cells - sentence.cells
-
-    #             if len(cells) < 1:
-    #                 continue
-
-    #             self.knowledge.append(Sentence(cells, count))
-    #             print(f'append -> {Sentence(cells, count)}')
-
-    #             # mark all as mine when count is equal cells
-    #             if count == len(cells) and len(cells) > 0:
-    #                 print(f'mark_mine -> {count} -> {cells}')
-    #                 [self.mark_mine(cell) for cell in cells]
-    #                 continue
-
-    #             # mark all as safe when count is 0
-    #             if count == 0:
-    #                 print(f'mark_safe -> {count} -> {cells}')
-    #                 [self.mark_safe(cell) for cell in cells]
-    #                 continue
-
-    #             break
+    def add_centences(self, new_sentence):
+        sentences = []
+        
+        for sentence in self.knowledge:
+            if len(sentence.cells) > 0 and sentence.cells.issubset(new_sentence.cells):
+                count = max(0, new_sentence.count - sentence.count)
+                cells = new_sentence.cells - sentence.cells
+                sentences.append(Sentence(cells, count))
+        
+        self.knowledge.extend(sentences);
 
     def add_knowledge(self, cell, count):
         """
@@ -248,14 +233,14 @@ class MinesweeperAI():
                     
                     # update counter when mine is in this sentence
                     if move in self.mines:
-                        count = min(0, count - 1)
+                        count = max(0, count - 1)
                         continue
 
                     cells.add(move)
 
         self.knowledge.append(Sentence(cells, count))
         self.mark_known()
-        # self.add_centences(Sentence(cells, count))
+        self.add_centences(Sentence(cells, count))
 
     def make_safe_move(self):
         """
