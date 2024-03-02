@@ -16,16 +16,20 @@ class Minesweeper():
 
         # Initialize an empty field with no mines
         self.board = []
+        
         for i in range(self.height):
             row = []
+            
             for j in range(self.width):
                 row.append(False)
+                
             self.board.append(row)
 
         # Add mines randomly
         while len(self.mines) != mines:
             i = random.randrange(height)
             j = random.randrange(width)
+            
             if not self.board[i][j]:
                 self.mines.add((i, j))
                 self.board[i][j] = True
@@ -40,12 +44,15 @@ class Minesweeper():
         """
         for i in range(self.height):
             print("--" * self.width + "-")
+            
             for j in range(self.width):
                 if self.board[i][j]:
                     print("|X", end="")
                 else:
                     print("| ", end="")
+                    
             print("|")
+            
         print("--" * self.width + "-")
 
     def is_mine(self, cell):
@@ -251,7 +258,6 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-
         for i in range(self.height):
             for j in range(self.width):
                 move = (i, j)
