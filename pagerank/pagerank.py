@@ -8,15 +8,19 @@ SAMPLES = 10000
 
 
 def main():
-    if len(sys.argv) != 2:
-        sys.exit("Usage: python pagerank.py corpus")
-    corpus = crawl(sys.argv[1])
-    ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
-    print(f"PageRank Results from Sampling (n = {SAMPLES})")
-    for page in sorted(ranks):
-        print(f"  {page}: {ranks[page]:.4f}")
+    # if len(sys.argv) != 2:
+    #     sys.exit("Usage: python pagerank.py corpus")
+
+    corpus = crawl('pagerank/corpus0')
+    # ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
+    # print(f"PageRank Results from Sampling (n = {SAMPLES})")
+
+    # for page in sorted(ranks):
+    #     print(f"  {page}: {ranks[page]:.4f}")
+
     ranks = iterate_pagerank(corpus, DAMPING)
     print(f"PageRank Results from Iteration")
+
     for page in sorted(ranks):
         print(f"  {page}: {ranks[page]:.4f}")
 
@@ -33,6 +37,7 @@ def crawl(directory):
     for filename in os.listdir(directory):
         if not filename.endswith(".html"):
             continue
+
         with open(os.path.join(directory, filename)) as f:
             contents = f.read()
             links = re.findall(r"<a\s+(?:[^>]*?)href=\"([^\"]*)\"", contents)
@@ -72,6 +77,26 @@ def sample_pagerank(corpus, damping_factor, n):
     raise NotImplementedError
 
 
+def get_page_number(items):
+    count = set()
+
+    for item in items:
+        count.add(item)
+        count.update(items[item])
+
+    return len(count)
+
+
+def get_linked_pages(corpus, page):
+    linked = set()
+
+    for item in corpus:
+        if page in corpus[item]:
+            linked.add(item)
+
+    return linked
+
+
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -81,7 +106,35 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    page_count = get_page_number(corpus)
+    ranks = dict()
+
+    # set initial random rank
+    for page in corpus:
+        ranks[page] = random.random()
+        
+    iter = True
+    
+    while iter:
+        for page in corpus:
+            linked = get_linked_pages(corpus, page)
+            
+            sum = 0
+
+            # sum all pages that link to current page
+            for link in linked:
+                sum += ranks[link] / len(corpus[link])
+            
+            new_rank = (1 - damping_factor) / page_count + damping_factor * sum
+            
+            # stop iteration if rank is not changing
+            if abs(ranks[page] - new_rank) <= 0.001:
+                iter = False
+                
+            ranks[page] = new_rank
+            
+        
+    return ranks
 
 
 if __name__ == "__main__":
