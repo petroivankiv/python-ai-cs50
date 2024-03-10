@@ -85,12 +85,20 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    page = '1.html'
+    page = random.choice([*corpus.keys()])
     ranks = dict()
+    samples = dict()
+    
+    for item in corpus:
+        samples[item] = 0
 
-    for i in range(1):
-        ranks = transition_model(corpus, page, damping_factor)
-        page = random.choices([*ranks.keys()], [*ranks.values()])
+    for i in range(n):
+        next_state = transition_model(corpus, page, damping_factor)
+        page = random.choices([*next_state.keys()], [*next_state.values()])[0]
+        samples[page] += 1
+        
+    for sample in samples:
+        ranks[sample] = samples[sample] / n
 
     return ranks
 
