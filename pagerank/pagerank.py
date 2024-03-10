@@ -12,11 +12,11 @@ def main():
     #     sys.exit("Usage: python pagerank.py corpus")
 
     corpus = crawl('pagerank/corpus0')
-    # ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
-    # print(f"PageRank Results from Sampling (n = {SAMPLES})")
+    ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
+    print(f"PageRank Results from Sampling (n = {SAMPLES})")
 
-    # for page in sorted(ranks):
-    #     print(f"  {page}: {ranks[page]:.4f}")
+    for page in sorted(ranks):
+        print(f"  {page}: {ranks[page]:.4f}")
 
     ranks = iterate_pagerank(corpus, DAMPING)
     print(f"PageRank Results from Iteration")
@@ -62,7 +62,18 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    page_count = get_page_number(corpus)
+    ranks = dict()
+
+    for item in corpus:
+        ranks[item] = (1 - damping_factor) / page_count
+
+    for item in corpus:
+        if item == page:
+            for link in corpus[item]:
+                ranks[link] += damping_factor / len(corpus[item])
+
+    return ranks
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -74,7 +85,14 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    page = '1.html'
+    ranks = dict()
+
+    for i in range(1):
+        ranks = transition_model(corpus, page, damping_factor)
+        page = random.choices([*ranks.keys()], [*ranks.values()])
+
+    return ranks
 
 
 def get_page_number(items):
@@ -112,28 +130,27 @@ def iterate_pagerank(corpus, damping_factor):
     # set initial random rank
     for page in corpus:
         ranks[page] = random.random()
-        
+
     iter = True
-    
+
     while iter:
         for page in corpus:
             linked = get_linked_pages(corpus, page)
-            
+
             sum = 0
 
             # sum all pages that link to current page
             for link in linked:
                 sum += ranks[link] / len(corpus[link])
-            
+
             new_rank = (1 - damping_factor) / page_count + damping_factor * sum
-            
+
             # stop iteration if rank is not changing
             if abs(ranks[page] - new_rank) <= 0.001:
                 iter = False
-                
+
             ranks[page] = new_rank
-            
-        
+
     return ranks
 
 
