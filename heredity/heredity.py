@@ -82,7 +82,6 @@ def main():
 
                 # Update probabilities with new joint probability
                 p = joint_probability(people, one_gene, two_genes, have_trait)
-                print(f'p -> {p}')
                 update(probabilities, one_gene, two_genes, have_trait, p)
 
     # Ensure probabilities sum to 1
@@ -130,7 +129,7 @@ def powerset(s):
     Return a list of all possible subsets of set s.
     """
     s = list(s)
-    
+
     return [
         set(s) for s in itertools.chain.from_iterable(
             itertools.combinations(s, r) for r in range(len(s) + 1)
@@ -150,42 +149,68 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     prob = 1
-    
-    def checkRoot(person, gene):
+
+    def calcParentsProb(person):
+        mother = people[person]['mother']
+        father = people[person]['father']
+
+        case1 = 1
+        case2 = 1
+
+        # got gene from mother
+        if mother not in one_gene and mother not in two_genes:
+            case1 *= PROBS['mutation']
+        else:
+            case1 *= 1 - PROBS['mutation']
+
+        # got gene not from father
+        if father not in one_gene and father not in two_genes:
+            case1 *= 1 - PROBS['mutation']
+        else:
+            case1 *= PROBS['mutation']
+
+        # got gene from father
+        if father not in one_gene and father not in two_genes:
+            case2 *= PROBS['mutation']
+        else:
+            case2 *= 1 - PROBS['mutation']
+
+        # got gene not from mother
+        if mother not in one_gene and mother not in two_genes:
+            case2 *= 1 - PROBS['mutation']
+        else:
+            case2 *= PROBS['mutation']
+
+        return case1 + case2
+
+    def calcProb(person, gene, hasParent):
         loc = 1
-        
-        loc *= PROBS["gene"][gene]
-            
+
+        if not hasParent:
+            loc *= PROBS["gene"][gene]
+        else:
+            loc *= calcParentsProb(person)
+
         if person in have_trait:
             loc *= PROBS["trait"][gene][True]
         else:
             loc *= PROBS["trait"][gene][False]
-            
+
         return loc
-            
-    def checkChild(person, gene):
-        # check gene base on parent
-        # implementation
-        
-        # check trait
-        if person in have_trait:
-            prob *= PROBS["trait"][gene][True]
-        else:
-            prob *= PROBS["trait"][gene][False]
-        
+
+    def hasParents(person):
+        return people[person]['mother'] != None or people[person]['father'] != None
+
     for person in people:
         if person in one_gene:
-            if people[person]['mother'] == None and people[person]['father'] == None:
-                prob *= checkRoot(person, 1)
-            
+            prob *= calcProb(person, 1, hasParents(person))
+
         if person in two_genes:
-            if people[person]['mother'] == None and people[person]['father'] == None:
-                prob *= checkRoot(person, 2)
-            
+            prob *= calcProb(person, 2, hasParents(person))
+
         if person not in two_genes and person not in one_gene:
-            if people[person]['mother'] == None and people[person]['father'] == None:
-                prob *= checkRoot(person, 0)
-            
+            prob *= calcProb(person, 0, hasParents(person))
+
     return prob
 
 
