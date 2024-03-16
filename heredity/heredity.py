@@ -158,28 +158,36 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         case2 = 1
 
         # got gene from mother
-        if mother not in one_gene and mother not in two_genes:
-            case1 *= PROBS['mutation']
-        else:
+        if mother in two_genes:
             case1 *= 1 - PROBS['mutation']
+        elif mother in one_gene:
+            case1 *= 0.5
+        else:
+            case1 *= PROBS['mutation']
 
         # got gene not from father
-        if father not in one_gene and father not in two_genes:
-            case1 *= 1 - PROBS['mutation']
-        else:
+        if father in two_genes:
             case1 *= PROBS['mutation']
+        elif father in one_gene:
+            case1 *= 0.5
+        else:
+            case1 *= 1 - PROBS['mutation']
 
         # got gene from father
-        if father not in one_gene and father not in two_genes:
-            case2 *= PROBS['mutation']
-        else:
+        if father in two_genes:
             case2 *= 1 - PROBS['mutation']
+        elif father in one_gene:
+            case2 *= 0.5
+        else:
+            case2 *= PROBS['mutation']
 
         # got gene not from mother
-        if mother not in one_gene and mother not in two_genes:
-            case2 *= 1 - PROBS['mutation']
-        else:
+        if mother in two_genes:
             case2 *= PROBS['mutation']
+        elif mother in one_gene:
+            case2 *= 0.5
+        else:
+            case2 *= 1 - PROBS['mutation']
 
         return case1 + case2
 
