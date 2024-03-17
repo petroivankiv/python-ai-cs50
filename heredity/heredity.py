@@ -149,51 +149,33 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     prob = 1
-    prob_list = [PROBS["mutation"], 0.5, 1 - PROBS["mutation"]]
-
-    def get_mother_prob(mother):
-        if mother in two_genes:
-            return 1 - PROBS['mutation']
-        elif mother in one_gene:
-            return 0.5
+    person_map = dict()
+    pos_list = [PROBS["mutation"], 0.5, 1 - PROBS["mutation"]]
+    neg_list = [1 - PROBS["mutation"], 0.5, PROBS["mutation"]]
+    
+    for p in people:
+        if p in one_gene:
+            person_map[p] = 1
+        elif p in two_genes:
+            person_map[p] = 2
         else:
-            return PROBS['mutation']
-
-    def get_not_mother_prob(mother):
-        if mother in two_genes:
-            return PROBS['mutation']
-        elif mother in one_gene:
-            return 0.5
-        else:
-            return 1 - PROBS['mutation']
-
-    def get_father_prob(father):
-        if father in two_genes:
-            return 1 - PROBS['mutation']
-        elif father in one_gene:
-            return 0.5
-        else:
-            return PROBS['mutation']
-
-    def get_not_father_prob(father):
-        if father in two_genes:
-            return PROBS['mutation']
-        elif father in one_gene:
-            return 0.5
-        else:
-            return 1 - PROBS['mutation']
+            person_map[p] = 0
 
     def calc_parents_prob(person, gene):
         mother = people[person]['mother']
         father = people[person]['father']
+        mather_pos = pos_list[person_map[mother]]
+        mather_neg = neg_list[person_map[mother]]
+        father_pos = pos_list[person_map[father]]
+        father_neg = neg_list[person_map[father]]
 
         if gene == 2:
-            return get_mother_prob(mother) * get_father_prob(father)
+            return mather_pos * father_pos
 
         if gene == 0:
-            return get_not_mother_prob(mother) * get_not_father_prob(father)
+            return mather_neg * father_neg
 
-        return get_mother_prob(mother) * get_not_father_prob(father) + get_father_prob(father) * get_not_mother_prob(mother)
+        return mather_pos * father_neg + father_pos * mather_neg
 
     def calc_prob(person, gene, is_child):
         loc = 1
@@ -212,16 +194,9 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
     def has_parent(person):
         return people[person]['mother'] != None or people[person]['father'] != None
-
+    
     for person in people:
-        if person not in two_genes and person not in one_gene:
-            prob *= calc_prob(person, 0, has_parent(person))
-
-        if person in one_gene:
-            prob *= calc_prob(person, 1, has_parent(person))
-
-        if person in two_genes:
-            prob *= calc_prob(person, 2, has_parent(person))
+        prob *= calc_prob(person, person_map[person], has_parent(person))
 
     return prob
 
@@ -235,18 +210,18 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     """
     for person in probabilities:
         if person not in two_genes and person not in one_gene:
-            probabilities[person]["gene"][0] = probabilities[person]["gene"][0] + p
+            probabilities[person]["gene"][0] += p
 
         if person in one_gene:
-            probabilities[person]["gene"][1] = probabilities[person]["gene"][1] + p
+            probabilities[person]["gene"][1] += p
 
         if person in two_genes:
-            probabilities[person]["gene"][2] = probabilities[person]["gene"][2] + p
+            probabilities[person]["gene"][2] += p
 
         if person in have_trait:
-            probabilities[person]["trait"][True] = probabilities[person]["trait"][True] + p
+            probabilities[person]["trait"][True] += p
         else:
-            probabilities[person]["trait"][False] = probabilities[person]["trait"][False] + p
+            probabilities[person]["trait"][False] += p
 
 
 def normalize(probabilities):

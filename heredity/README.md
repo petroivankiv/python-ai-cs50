@@ -3,7 +3,8 @@
 
 ## Очікуваний результат
 ```
-family0.csv
+** family0.csv **
+
 Harry:
   Gene:
     2: 0.0092
@@ -29,7 +30,8 @@ Lily:
     True: 0.0000
     False: 1.0000
 
-family1.csv
+** family1.csv **
+
 Arthur:
   Gene:
     2: 0.0329
@@ -79,7 +81,8 @@ Ron:
     True: 0.1110
     False: 0.8890
 
-family2.csv
+** family2.csv **
+
 Arthur:
   Gene:
     2: 0.0147
