@@ -43,7 +43,7 @@ def main():
     # if len(sys.argv) != 2:
     #     sys.exit("Usage: python heredity.py data.csv")
 
-    people = load_data('heredity/data/family0.csv')
+    people = load_data('6.heredity/data/family0.csv')
 
     # Keep track of gene and trait probabilities for each person
     probabilities = {

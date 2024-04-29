@@ -11,7 +11,7 @@ def main():
     # if len(sys.argv) != 2:
     #     sys.exit("Usage: python pagerank.py corpus")
 
-    corpus = crawl('pagerank/corpus0')
+    corpus = crawl('5.pagerank/corpus0')
     ranks = sample_pagerank(corpus, DAMPING, SAMPLES)
     print(f"PageRank Results from Sampling (n = {SAMPLES})")
 
