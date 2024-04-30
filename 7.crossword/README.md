@@ -1,3 +1,8 @@
+Напишіть штучний інтелект для створення кросвордів.
+
+$ python generate.py data/structure1.txt data/words1.txt output.png
+
+
 ## Технічні вимоги
 
 Завершіть реалізацію функцій enforce_node_consistency, revise, ac3, assignment_complete, consistent, order_domain_values, selected_unassigned_variable та backtrack у файлі generate.py, щоби ваш штучний інтелект генерував заповнені кросворди, якщо це можливо.

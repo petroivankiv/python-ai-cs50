@@ -182,7 +182,7 @@ def main():
         sys.exit("Usage: python generate.py structure words [output]")
         
     folder = '7.crossword'
-    index = '0'
+    index = '1'
 
     # Parse command-line arguments
     structure = f'{folder}/data/structure{index}.txt' # sys.argv[1]
