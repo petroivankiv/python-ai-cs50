@@ -10,6 +10,7 @@ class Variable():
         self.direction = direction
         self.length = length
         self.cells = []
+        
         for k in range(self.length):
             self.cells.append(
                 (self.i + (k if self.direction == Variable.DOWN else 0),
@@ -46,8 +47,10 @@ class Crossword():
             self.width = max(len(line) for line in contents)
 
             self.structure = []
+            
             for i in range(self.height):
                 row = []
+                
                 for j in range(self.width):
                     if j >= len(contents[i]):
                         row.append(False)
@@ -55,6 +58,7 @@ class Crossword():
                         row.append(True)
                     else:
                         row.append(False)
+                        
                 self.structure.append(row)
 
         # Save vocabulary list
@@ -63,6 +67,7 @@ class Crossword():
 
         # Determine variable set
         self.variables = set()
+        
         for i in range(self.height):
             for j in range(self.width):
 
@@ -71,13 +76,16 @@ class Crossword():
                     self.structure[i][j]
                     and (i == 0 or not self.structure[i - 1][j])
                 )
+                
                 if starts_word:
                     length = 1
+                    
                     for k in range(i + 1, self.height):
                         if self.structure[k][j]:
                             length += 1
                         else:
                             break
+                        
                     if length > 1:
                         self.variables.add(Variable(
                             i=i, j=j,
@@ -90,13 +98,16 @@ class Crossword():
                     self.structure[i][j]
                     and (j == 0 or not self.structure[i][j - 1])
                 )
+                
                 if starts_word:
                     length = 1
+                    
                     for k in range(j + 1, self.width):
                         if self.structure[i][k]:
                             length += 1
                         else:
                             break
+                        
                     if length > 1:
                         self.variables.add(Variable(
                             i=i, j=j,
@@ -109,17 +120,21 @@ class Crossword():
         #    None, if the two variables do not overlap; or
         #    (i, j), where v1's ith character overlaps v2's jth character
         self.overlaps = dict()
+        
         for v1 in self.variables:
             for v2 in self.variables:
                 if v1 == v2:
                     continue
+                
                 cells1 = v1.cells
                 cells2 = v2.cells
                 intersection = set(cells1).intersection(cells2)
+                
                 if not intersection:
                     self.overlaps[v1, v2] = None
                 else:
                     intersection = intersection.pop()
+                    
                     self.overlaps[v1, v2] = (
                         cells1.index(intersection),
                         cells2.index(intersection)

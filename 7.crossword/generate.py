@@ -23,12 +23,15 @@ class CrosswordCreator():
             [None for _ in range(self.crossword.width)]
             for _ in range(self.crossword.height)
         ]
+        
         for variable, word in assignment.items():
             direction = variable.direction
+            
             for k in range(len(word)):
                 i = variable.i + (k if direction == Variable.DOWN else 0)
                 j = variable.j + (k if direction == Variable.ACROSS else 0)
                 letters[i][j] = word[k]
+                
         return letters
 
     def print(self, assignment):
@@ -36,6 +39,7 @@ class CrosswordCreator():
         Print crossword assignment to the terminal.
         """
         letters = self.letter_grid(assignment)
+        
         for i in range(self.crossword.height):
             for j in range(self.crossword.width):
                 if self.crossword.structure[i][j]:
@@ -49,6 +53,7 @@ class CrosswordCreator():
         Save crossword assignment to an image file.
         """
         from PIL import Image, ImageDraw, ImageFont
+        
         cell_size = 100
         cell_border = 2
         interior_size = cell_size - 2 * cell_border
@@ -73,8 +78,10 @@ class CrosswordCreator():
                     ((j + 1) * cell_size - cell_border,
                      (i + 1) * cell_size - cell_border)
                 ]
+                
                 if self.crossword.structure[i][j]:
                     draw.rectangle(rect, fill="white")
+                    
                     if letters[i][j]:
                         _, _, w, h = draw.textbbox((0, 0), letters[i][j], font=font)
                         draw.text(
@@ -173,10 +180,13 @@ def main():
     # Check usage
     if len(sys.argv) not in [3, 4]:
         sys.exit("Usage: python generate.py structure words [output]")
+        
+    folder = '7.crossword'
+    index = '0'
 
     # Parse command-line arguments
-    structure = sys.argv[1]
-    words = sys.argv[2]
+    structure = f'{folder}/data/structure{index}.txt' # sys.argv[1]
+    words = f'{folder}/data/words{index}.txt' # sys.argv[2]
     output = sys.argv[3] if len(sys.argv) == 4 else None
 
     # Generate crossword
@@ -189,6 +199,7 @@ def main():
         print("No solution.")
     else:
         creator.print(assignment)
+        
         if output:
             creator.save(assignment, output)
 
