@@ -121,10 +121,10 @@ class CrosswordCreator():
         """
         overlap = self.crossword.overlaps[x, y]
         revised = False
-            
+        
         if overlap == None:
             return False
-            
+        
         for word_x in self.domains[x]:
             letter_x = word_x[overlap[0]]
             
@@ -144,6 +144,8 @@ class CrosswordCreator():
             for y in self.domains:
                 if x != y:
                     arcs.append((x, y));
+        
+        return arcs
 
     def ac3(self, arcs=None):
         """
@@ -165,7 +167,7 @@ class CrosswordCreator():
                 if len(self.domains[x]) == 0:
                     return False
                 
-                for d in self.crossword.neighbors(x) - y:
+                for d in self.crossword.neighbors(x):
                     arcs.append((d, x))
                     
         return True
@@ -181,16 +183,47 @@ class CrosswordCreator():
                 return False
             
         return True
+    
+    def has_conflict(self, var, assignment):
+        neighbors = self.crossword.neighbors(var)
+        
+        for n in neighbors:
+            overlap = self.crossword.overlaps[var, n]
+            word_x = assignment[var]
+            
+            if var.direction == n.direction:
+                return False
+            
+            if n not in assignment:
+                return False
+            
+            word_y = assignment[n]
+            
+            if word_x[overlap[0]] != word_y[overlap[1]]:
+                return True
+            
+        return False
+            
+            
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
+        unique = dict()
+
         for var in assignment:
-            if len(assignment[var]) != var.length:
+            word = assignment[var]
+            
+            if word in unique:
                 return False
-        
+            
+            unique[word] = 1
+            
+            if self.has_conflict(var, assignment):
+                return False
+            
         return True
 
     def order_domain_values(self, var, assignment):
@@ -213,8 +246,11 @@ class CrosswordCreator():
         var = None
         
         for v in self.domains:
-            if not v in assignment or len(self.domains[v]) < len(self.domains[var]):
-                var = v
+            if not v in assignment:
+                if var and len(self.domains[var]) < len(self.domains[v]):
+                    continue
+                else: 
+                    var = v
             
         return var
 
@@ -240,7 +276,8 @@ class CrosswordCreator():
                 if result != None:
                     return result
             
-            del assignment[var]
+            if var in assignment:
+                del assignment[var]
         
         return None
 
@@ -252,7 +289,7 @@ def main():
     #     sys.exit("Usage: python generate.py structure words [output]")
         
     folder = '7.crossword'
-    index = '1'
+    index = '2'
 
     # Parse command-line arguments
     structure = f'{folder}/data/structure{index}.txt' # sys.argv[1]
@@ -263,6 +300,7 @@ def main():
     crossword = Crossword(structure, words)
     creator = CrosswordCreator(crossword)
     assignment = creator.solve()
+    print(assignment)
 
     # Print result
     if assignment is None:
