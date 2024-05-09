@@ -133,10 +133,10 @@ class CrosswordCreator():
         for word_x in self.domains[x]:
             letter_x = word_x[overlap[0]]
 
-            consisten = [word_y for word_y in self.domains[y]
+            consistent = [word_y for word_y in self.domains[y]
                          if letter_x == word_y[overlap[1]] and word_y != word_x]
             
-            if not consisten:
+            if not consistent:
                 self.domains[x].remove(word_x)
                 revised = True
 
@@ -174,7 +174,7 @@ class CrosswordCreator():
 
                 for d in self.crossword.neighbors(x) - {y}:
                     arcs.append((d, x))
-                    
+                 
 
         return True
 
@@ -215,7 +215,7 @@ class CrosswordCreator():
         puzzle without conflicting characters); return False otherwise.
         """
         unique = dict()
-
+        
         for var in assignment:
             word = assignment[var]
 
@@ -226,7 +226,7 @@ class CrosswordCreator():
 
             if self.has_conflict(var, assignment):
                 return False
-
+        
         return True
 
     def order_domain_values(self, var, assignment):
@@ -236,6 +236,12 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+        def sort_fn(e):
+            # return number of elem to delete from neighbors
+            pass
+        
+        # self.domains[var].sort(reverse=False)
+        
         return self.domains[var]
 
     def select_unassigned_variable(self, assignment):
@@ -272,7 +278,10 @@ class CrosswordCreator():
         var = self.select_unassigned_variable(assignment)
 
         for val in self.order_domain_values(var, assignment):
-            if self.consistent(assignment):
+            assignment_copy = assignment.copy()
+            assignment_copy[var] = val
+            
+            if self.consistent(assignment_copy):
                 assignment[var] = val
                 result = self.backtrack(assignment)
 
@@ -292,7 +301,7 @@ def main():
     #     sys.exit("Usage: python generate.py structure words [output]")
 
     folder = '7.crossword'
-    index = '0'
+    index = '2'
 
     # Parse command-line arguments
     structure = f'{folder}/data/structure{index}.txt'  # sys.argv[1]
@@ -303,7 +312,7 @@ def main():
     crossword = Crossword(structure, words)
     creator = CrosswordCreator(crossword)
     assignment = creator.solve()
-    print(assignment)
+    # print(assignment)
 
     # Print result
     if assignment is None:
