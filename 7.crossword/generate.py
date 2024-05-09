@@ -129,13 +129,13 @@ class CrosswordCreator():
 
         if overlap == None:
             return False
-
+        
         for word_x in self.domains[x]:
             letter_x = word_x[overlap[0]]
 
             consisten = [word_y for word_y in self.domains[y]
-                         if letter_x == word_y[overlap[1]]]
-
+                         if letter_x == word_y[overlap[1]] and word_y != word_x]
+            
             if not consisten:
                 self.domains[x].remove(word_x)
                 revised = True
@@ -172,11 +172,9 @@ class CrosswordCreator():
                 if len(self.domains[x]) == 0:
                     return False
 
-                n = self.crossword.neighbors(x).remove(y)
-
-                if n:
-                    for d in self.crossword.neighbors(x).remove(y):
-                        arcs.append((d, x))
+                for d in self.crossword.neighbors(x) - {y}:
+                    arcs.append((d, x))
+                    
 
         return True
 
@@ -294,7 +292,7 @@ def main():
     #     sys.exit("Usage: python generate.py structure words [output]")
 
     folder = '7.crossword'
-    index = '1'
+    index = '0'
 
     # Parse command-line arguments
     structure = f'{folder}/data/structure{index}.txt'  # sys.argv[1]
