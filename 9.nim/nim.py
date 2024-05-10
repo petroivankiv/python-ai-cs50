@@ -161,6 +161,10 @@ class NimAI():
         """
         action = None
         max_val = 0
+        actions = Nim.available_actions(state)
+
+        if epsilon:
+            return random.choices(list(actions), k=1)[0]
         
         for s in self.q:
             if s[0] == tuple(state):
@@ -169,7 +173,7 @@ class NimAI():
                     action = s[1]
                     
         if action == None:
-            return Nim.available_actions(state).pop()
+            return actions.pop()
                     
         return action
         
