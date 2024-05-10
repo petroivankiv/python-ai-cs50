@@ -278,10 +278,9 @@ class CrosswordCreator():
         var = self.select_unassigned_variable(assignment)
 
         for val in self.order_domain_values(var, assignment):
-            assignment_copy = assignment.copy()
-            assignment_copy[var] = val
+            assignment[var] = val
             
-            if self.consistent(assignment_copy):
+            if self.consistent(assignment):
                 assignment[var] = val
                 result = self.backtrack(assignment)
 
