@@ -281,7 +281,6 @@ class CrosswordCreator():
             assignment[var] = val
             
             if self.consistent(assignment):
-                assignment[var] = val
                 result = self.backtrack(assignment)
 
                 if result != None:
