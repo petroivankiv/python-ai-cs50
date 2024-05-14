@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 10.traffic/gtsrb/
+10.traffic/gtsrb-small/

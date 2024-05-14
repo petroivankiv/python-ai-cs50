@@ -6,21 +6,23 @@ import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
 
+DATA_SET = 'gtsrb-small'
 EPOCHS = 10
-IMG_WIDTH = 30
-IMG_HEIGHT = 30
-NUM_CATEGORIES = 43
+IMG_WIDTH = 25
+IMG_HEIGHT = 25
+NUM_CATEGORIES = 43 if DATA_SET == 'gtsrb' else 3
 TEST_SIZE = 0.4
+BASE_PATH = f'10.traffic{os.sep}{DATA_SET}'
 
 
 def main():
 
     # Check command-line arguments
-    if len(sys.argv) not in [2, 3]:
-        sys.exit("Usage: python traffic.py data_directory [model.h5]")
+    # if len(sys.argv) not in [2, 3]:
+    #     sys.exit("Usage: python traffic.py data_directory [model.h5]")
 
     # Get image arrays and labels for all image files
-    images, labels = load_data(sys.argv[1])
+    images, labels = load_data(BASE_PATH)
 
     # Split data into training and testing sets
     labels = tf.keras.utils.to_categorical(labels)
@@ -58,7 +60,22 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    images = []
+    labels = []
+
+    for d in os.listdir(data_dir):
+        if d == '.DS_Store':
+            continue
+
+        for im in os.listdir(f'{BASE_PATH}{os.sep}{d}'):
+            im_path = f'{BASE_PATH}{os.sep}{d}{os.sep}{im}'
+
+            if os.path.exists(im_path):
+                image = cv2.imread(im_path)[:IMG_WIDTH, :IMG_HEIGHT]
+                images.append(image)
+                labels.append(d)
+
+    return (images, labels)
 
 
 def get_model():
@@ -67,7 +84,39 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    # Create a neural network
+    model = tf.keras.models.Sequential()
+
+    # Convolutional layer. Learn 32 filters using a 3x3 kernel
+    model.add(tf.keras.layers.Conv2D(
+        32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
+    )),
+    
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2))),
+    model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu")),
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2))),
+    model.add(tf.keras.layers.Flatten()),
+    model.add(tf.keras.layers.Dense(64, activation="relu")),
+    model.add(tf.keras.layers.Dropout(0.4)),
+
+    # Add output layer
+    model.add(tf.keras.layers.Dense(NUM_CATEGORIES))
+    
+    # Reshape the output to match the target shape
+    # model.add(tf.keras.layers.Reshape((IMG_WIDTH, IMG_HEIGHT, NUM_CATEGORIES)))
+    
+    # Use softmax activation for classification
+    model.add(tf.keras.layers.Softmax() )
+
+    # Train neural network
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"])
+
+    model.summary()
+
+    return model
 
 
 if __name__ == "__main__":
